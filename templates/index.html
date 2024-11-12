@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>График из Excel файла</title>
+</head>
+<body>
+    <h1>Выберите категории для построения графика</h1>
+
+    <!-- Поле для поиска -->
+    <input type="text" id="searchBox" placeholder="Поиск по товарам" onkeyup="filterCategories()">
+
+    <!-- Форма для выбора категорий и отправки на сервер -->
+    <form id="uploadForm">
+        <div id="categoryList">
+            <!-- Список категорий с чекбоксами -->
+            {% for category in categories %}
+                <div class="category-item">
+                    <input type="checkbox" name="categories" value="{{ category }}">
+                    <label>{{ category }}</label>
+                </div>
+            {% endfor %}
+        </div>
+        <button type="submit">Построить график</button>
+    </form>
+
+    <br>
+    <div id="graph">
+        <!-- Здесь появится график -->
+    </div>
+
+    <script>
+        // Функция фильтрации категорий на основе введенного текста
+        function filterCategories() {
+            const searchBox = document.getElementById("searchBox").value.toLowerCase();
+            const categoryItems = document.querySelectorAll(".category-item");
+
+            categoryItems.forEach(item => {
+                const label = item.querySelector("label").innerText.toLowerCase();
+                if (label.includes(searchBox)) {
+                    item.style.display = ""; // Показываем элемент
+                } else {
+                    item.style.display = "none"; // Скрываем элемент
+                }
+            });
+        }
+
+        // Асинхронная отправка формы и загрузка графика
+        document.getElementById('uploadForm').onsubmit = async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(document.getElementById('uploadForm'));
+
+            // Отправляем POST-запрос на сервер
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            // Проверяем ответ и отображаем график
+            if (response.ok) {
+                const imgBlob = await response.blob();
+                const imgUrl = URL.createObjectURL(imgBlob);
+                document.getElementById('graph').innerHTML = `<img src="${imgUrl}" alt="График">`;
+            } else {
+                const errorText = await response.text();
+                alert(`Ошибка: ${errorText}`);
+            }
+        };
+    </script>
+</body>
+</html>

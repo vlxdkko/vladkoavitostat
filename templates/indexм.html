@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>График из Excel файла</title>
+</head>
+<body>
+    <h1>Загрузите Excel файл для построения графика</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".xlsx" required>
+        <button type="submit">Построить график</button>
+    </form>
+    <br>
+    <div id="graph">
+        <!-- Здесь появится график -->
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').onsubmit = async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData();
+            formData.append('file', document.querySelector('input[type="file"]').files[0]);
+
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const imgBlob = await response.blob();
+                const imgUrl = URL.createObjectURL(imgBlob);
+                document.getElementById('graph').innerHTML = `<img src="${imgUrl}" alt="График">`;
+            } else {
+                const errorText = await response.text();
+                alert(`Ошибка: ${errorText}`);
+            }
+        };
+    </script>
+</body>
+</html>
